@@ -24,3 +24,20 @@ export const registerSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(z.email("Please provide a valid email address").max(254)),
+
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .refine(
+      (password) => Buffer.byteLength(password, "utf8") <= 72,
+      "Password cannot exceed 72 bytes"
+    ),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
