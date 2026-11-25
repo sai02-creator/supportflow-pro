@@ -1,21 +1,19 @@
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
-
-dotenv.config();
-
+import { prisma } from "./lib/prisma.js";
+import authRoutes from "./routes/auth.routes.js";
 const app = express();
-const PORT = process.env.PORT || 5050;
+const PORT = Number(process.env.PORT) || 5050;
 
-// Security middleware
+// Middleware
 app.use(helmet());
-
-// Request handling middleware
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 
-// Health check endpoint
+// API health check
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -24,7 +22,40 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+// Database health check
+app.get("/api/health/db", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    res.status(200).json({
+      success: true,
+      message: "Database connection successful",
+    });
+  } catch (error) {
+    console.error("Database connection failed:", error);
+
+    res.status(503).json({
+      success: false,
+      message: "Database connection unavailable",
+    });
+  }
+});
+
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`SupportFlow Pro API running on port ${PORT}`);
 });
+
+// Graceful shutdown
+const shutdown = async () => {
+  console.log("Shutting down server...");
+
+  server.close(async () => {
+    await prisma.$disconnect();
+    console.log("Database connection closed.");
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
