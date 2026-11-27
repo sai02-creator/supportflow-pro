@@ -10,6 +10,7 @@ datasource db {
 enum UserRole {
   ADMIN
   AGENT
+  CUSTOMER
 }
 
 enum TicketStatus {
@@ -31,7 +32,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      UserRole @default(AGENT)
+  role      UserRole @default(CUSTOMER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

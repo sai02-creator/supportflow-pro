@@ -1,6 +1,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { UserRole } from "../generated/prisma/client.js";
 
 // Extend Express Request to include authenticated user information
 declare global {
@@ -8,7 +9,7 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        role: string;
+        role: UserRole;
       };
     }
   }
@@ -59,7 +60,8 @@ export const authenticateToken = (
     if (
       typeof decoded === "string" ||
       typeof decoded.sub !== "string" ||
-      typeof decoded.role !== "string"
+      typeof decoded.role !== "string" ||
+      !Object.values(UserRole).includes(decoded.role as UserRole)
     ) {
       return res.status(401).json({
         success: false,
@@ -70,7 +72,7 @@ export const authenticateToken = (
     // 6. Attach authenticated user information to the request
     req.user = {
       id: decoded.sub,
-      role: decoded.role,
+      role: decoded.role as UserRole,
     };
 
     // 7. Allow the request to continue
