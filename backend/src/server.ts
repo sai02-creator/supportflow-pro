@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
 import authRoutes from "./routes/auth.routes.js";
 import roleRoutes from "./routes/role.routes.js";
+import ticketRoutes from "./routes/ticket.routes.js";
 const app = express();
 const PORT = Number(process.env.PORT) || 5050;
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 // API health check
 app.get("/api/health", (_req, res) => {
